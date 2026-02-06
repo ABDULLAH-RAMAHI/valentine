@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Valentine?</title>
+  <style>
+    :root {
+      --bg1:#ffd6e7;
+      --bg2:#fff1f7;
+      --pink:#e94b7a;
+      --green:#28a745;
+      --red:#dc3545;
+    }
+
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at top, var(--bg2), var(--bg1));
+      overflow: hidden;
+    }
+
+    .card {
+      width: min(720px, 92vw);
+      padding: 40px 24px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      color: var(--pink);
+      font-size: clamp(24px, 4vw, 42px);
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+
+    .buttons {
+      margin-top: 26px;
+      height: 110px;                 /* مساحة لهروب زر No */
+      position: relative;
+    }
+
+    button {
+      border: none;
+      padding: 14px 34px;
+      font-size: 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform 0.08s ease;
+      user-select: none;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    button:active { transform: scale(0.97); }
+
+    #yesBtn {
+      background: var(--green);
+      position: absolute;
+      left: 50%;
+      top: 18px;
+      transform: translateX(-110%);
+    }
+
+    #noBtn {
+      background: var(--red);
+      position: absolute;
+      left: 50%;
+      top: 18px;
+      transform: translateX(10%);
+    }
+
+    .result {
+      margin-top: 18px;
+      font-size: 20px;
+      color: #333;
+      font-weight: 700;
+      min-height: 28px;
+    }
+
+    /* Overlay للميم */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .modal {
+      width: min(560px, 94vw);
+      background: #fff;
+      border-radius: 22px;
+      padding: 20px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+      text-align: center;
+    }
+
+    .modal h2 {
+      margin: 0 0 14px;
+      color: var(--red);
+      font-size: 28px;
+      font-weight: 900;
+    }
+
+    .meme {
+      width: 100%;
+      border-radius: 18px;
+      border: 6px solid var(--red);
+      overflow: hidden;
+      background: #f7f7f7;
+    }
+
+    .meme img {
+      width: 100%;
+      display: block;
+    }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .close {
+      margin-top: 12px;
+      background: #111;
+      padding: 10px 18px;
+      font-size: 14px;
+      border-radius: 999px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Will you be my valentine? 🌹</h1>
+
+    <div class="buttons" id="playArea">
+      <button id="yesBtn">Yes</button>
+      <button id="noBtn">No</button>
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <!-- ميم بعد 4 ضغطات -->
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <h2>Stop messing with me! 😼</h2>
+      <div class="meme">
+        <!-- غيّر src لصورتك: مثلا meme.jpg -->
+        <img id="memeImg" src="meme.jpg" alt="meme" />
+      </div>
+      <div class="hint">Tip: Put an image named <b>meme.jpg</b> next to <b>index.html</b> (same folder).</div>
+      <button class="close" id="closeOverlay">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const playArea = document.getElementById("playArea");
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
+    const result = document.getElementById("result");
+    const overlay = document.getElementById("overlay");
+    const closeOverlay = document.getElementById("closeOverlay");
+
+    let noClicks = 0;
+
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function moveNoButton() {
+      const areaRect = playArea.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+
+      // نخلي الزر ضمن حدود مساحة اللعب
+      const maxX = areaRect.width - btnRect.width;
+      const maxY = areaRect.height - btnRect.height;
+
+      const x = Math.random() * maxX;
+      const y = Math.random() * maxY;
+
+      noBtn.style.left = x + "px";
+      noBtn.style.top = y + "px";
+      noBtn.style.transform = "translateX(0)"; // نلغي التمركز الأصلي بعد أول حركة
+    }
+
+    function resetButtons() {
+      // رجّعهم لتصميم البداية
+      yesBtn.style.left = "50%";
+      yesBtn.style.top = "18px";
+      yesBtn.style.transform = "translateX(-110%)";
+
+      noBtn.style.left = "50%";
+      noBtn.style.top = "18px";
+      noBtn.style.transform = "translateX(10%)";
+    }
+
+    // YES
+    yesBtn.addEventListener("click", () => {
+      result.textContent = "Thank you 💖 I love you forever!";
+      yesBtn.style.display = "none";
+      noBtn.style.display = "none";
+    });
+
+    // NO (يهرب + عدّ)
+    noBtn.addEventListener("click", () => {
+      noClicks++;
+
+      if (noClicks >= 4) {
+        overlay.style.display = "flex";
+        return;
+      }
+
+      // هروب
+      moveNoButton();
+    });
+
+    // إغلاق الميم
+    closeOverlay.addEventListener("click", () => {
+      overlay.style.display = "none";
+    });
+
+    // لو المستخدم كبّر/صغّر الصفحة
+    window.addEventListener("resize", () => {
+      // حتى ما يطلع زر no خارج المساحة
+      resetButtons();
+    });
+  </script>
+</body>
+</html>
